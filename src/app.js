@@ -3,7 +3,7 @@ import wgRouter from "./routes/wg_router.js";
 import mongoose from "mongoose";
 
 const app = express();
-const port = 12345;
+const port = 20013;
 
 /* Middlewares */
 app.use(express.json());
@@ -12,7 +12,7 @@ app.use(express.json());
 app.use("/api/wg", wgRouter);
 
 /* MongoDB */
-const MONGODB_URL = /*process.env.MONGODB_URL ||*/ "mongodb://127.0.0.1/colipi";
+const MONGODB_URL = process.env.MONGODB_URL || "mongodb://127.0.0.1/colipi";
 await mongoose.connect(MONGODB_URL);
 
 /* Listener */

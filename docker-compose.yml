@@ -1,0 +1,34 @@
+version: '3'
+services:
+  colipi_backend:
+    image: colipi_backend
+    container_name: colipi_backend
+    build: .
+    ports:
+      - "20013:20013"
+    environment:
+      - MONGODB_URL=mongodb://colipi_mongodb:20012/colipi
+    depends_on:
+      - colipi_mongodb
+
+  colipi_mongodb:
+    image: mongo:4.4
+    container_name: colipi_mongodb
+    command: mongod --port 20012
+    ports:
+      - "20012:20012"
+    environment:
+      - MONGO_INITDB_DATABASE=colipi
+    #volumes:
+    #  - ./database:/docker-entrypoint-initdb.d
+
+  colipi_mongo_express:
+    image: mongo-express
+    container_name: colipi_mongo_express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://colipi_mongodb:20012
+    depends_on:
+      - colipi_mongodb

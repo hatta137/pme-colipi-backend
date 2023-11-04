@@ -56,8 +56,10 @@ router.post('/',
                 creator: userId,
                 shoppingList: []
             });
-
             await wg.save();
+
+            user.wg = wg._id;
+            await user.save();
 
             util.responseSuccess(response, {
                 invitationCode: invitationCode
