@@ -1,5 +1,9 @@
 # 🛋️ CoLiPi Backend
 
+## Port
+
+Das Backend ist vorläufig unter dem Port `20013` erreichbar.
+
 ## Implementierte Routen:
 
 ### `/api/wg`
