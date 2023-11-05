@@ -41,28 +41,45 @@ router.post('/',
             const user = await User.findById(userId);
             const wgId = user.wg;
             if (wgId) {
-                response.forbidden(ResponseCodes.AlreadyJoined);
+                response.forbidden(ResponseCodes.AlreadyInWG);
                 return;
             }
 
-            const { name } = request.body;
+            const { name, users } = request.body;
             const invitationCode = generateRandomString(6);
+
+            let members = [ userId ];
+            if (users) {
+                for (const usernameToAdd of users) {
+                    const userToAdd = await User.findOne({ username: usernameToAdd });
+                    if (!userToAdd) {
+                        response.notFound(ResponseCodes.UserNotFound, { username: usernameToAdd });
+                        return;
+                    }
+                    if (userToAdd.wg) {
+                        response.forbidden(ResponseCodes.UserAlreadyInWG, { username: usernameToAdd });
+                        return;
+                    }
+                    members.push(userToAdd._id);
+                }
+            }
 
             const wg = await WG.create({
                 name: name,
                 invitationCode: invitationCode,
-                members: [ userId ],
+                members: members,
                 creator: userId,
                 shoppingList: []
             });
             await wg.save();
 
-            user.wg = wg._id;
-            await user.save();
+            for (const memberId of members) {
+                const member = await User.findById(memberId);
+                member.wg = wg._id;
+                await member.save();
+            }
 
-            response.success({
-                invitationCode: invitationCode
-            });
+            response.success({ invitationCode: invitationCode });
         } catch (error) {
             console.error(error);
             response.internalError();
@@ -78,7 +95,7 @@ router.get('/join',
             const user = await User.findById(userId);
             const wgId = user.wg;
             if (wgId) {
-                response.forbidden(ResponseCodes.AlreadyJoined);
+                response.forbidden(ResponseCodes.AlreadyInWG);
                 return;
             }
 

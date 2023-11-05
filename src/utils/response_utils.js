@@ -7,8 +7,10 @@ export const ResponseCodes = {
     InternalServerError: 'INTERNAL_SERVER_ERROR',
     NotFound: 'NOT_FOUND',
     WGNotFound: 'WG_NOT_FOUND',
-    AlreadyJoined: 'ALREADY_JOINED',
+    AlreadyInWG: 'ALREADY_IN_WG',
     NotInWG: 'NOT_IN_WG',
+    UserNotFound: 'USER_NOT_FOUND',
+    UserAlreadyInWG: 'USER_ALREADY_IN_WG',
 };
 
 /**
@@ -32,10 +34,16 @@ response.success = success;
  * @memberof Response
  * @instance
  */
-function badInput(status = null) {
-    this.status(400).json({
+function badInput(status = null, data = null) {
+    const json = {
         status: !status ? ResponseCodes.BadInput : status
-    });
+    };
+
+    if (data) {
+        json.data = data;
+    }
+
+    this.status(400).json(json);
 }
 response.badInput = badInput;
 
@@ -43,10 +51,16 @@ response.badInput = badInput;
  * @memberof Response
  * @instance
  */
-function notFound(status) {
-    this.status(404).json({
+function notFound(status = null, data = null) {
+    const json = {
         status: !status ? ResponseCodes.NotFound : status
-    });
+    };
+
+    if (data) {
+        json.data = data;
+    }
+
+    this.status(404).json(json);
 }
 response.notFound = notFound;
 
@@ -54,10 +68,16 @@ response.notFound = notFound;
  * @memberof Response
  * @instance
  */
-function forbidden(status) {
-    this.status(403).json({
+function forbidden(status = null, data = null) {
+    const json = {
         status: !status ? ResponseCodes.Forbidden : status
-    });
+    };
+
+    if (data) {
+        json.data = data;
+    }
+
+    this.status(403).json(json);
 }
 response.forbidden = forbidden;
 
@@ -65,7 +85,7 @@ response.forbidden = forbidden;
  * @memberof Response
  * @instance
  */
-function internalError(data) {
+function internalError(data = null) {
     const json = {
         status: ResponseCodes.InternalServerError
     };
