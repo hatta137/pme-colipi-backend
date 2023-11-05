@@ -1,3 +1,5 @@
+import { response } from "express";
+
 export const ResponseCodes = {
     Success: 'SUCCESS',
     BadInput: 'BAD_INPUT',
@@ -9,7 +11,11 @@ export const ResponseCodes = {
     NotInWG: 'NOT_IN_WG',
 };
 
-export const responseSuccess = (response, data) => {
+/**
+ * @memberof Response
+ * @instance
+ */
+function success(data = null) {
     const json = {
         status: ResponseCodes.Success
     };
@@ -18,28 +24,48 @@ export const responseSuccess = (response, data) => {
         json.data = data;
     }
 
-    response.status(200).json(json);
-};
+    this.status(200).json(json);
+}
+response.success = success;
 
-export const responseBadInput = (response, status) => {
-    response.status(400).json({
-        status: status === null ? ResponseCodes.BadInput : status
+/**
+ * @memberof Response
+ * @instance
+ */
+function badInput(status = null) {
+    this.status(400).json({
+        status: !status ? ResponseCodes.BadInput : status
     });
-};
+}
+response.badInput = badInput;
 
-export const responseNotFound = (response, status) => {
-    response.status(404).json({
-        status: status === null ? ResponseCodes.NotFound : status
+/**
+ * @memberof Response
+ * @instance
+ */
+function notFound(status) {
+    this.status(404).json({
+        status: !status ? ResponseCodes.NotFound : status
     });
-};
+}
+response.notFound = notFound;
 
-export const responseForbidden = (response, status) => {
-    response.status(403).json({
-        status: status === null ? ResponseCodes.Forbidden : status
+/**
+ * @memberof Response
+ * @instance
+ */
+function forbidden(status) {
+    this.status(403).json({
+        status: !status ? ResponseCodes.Forbidden : status
     });
-};
+}
+response.forbidden = forbidden;
 
-export const responseInternalError = (response, data) => {
+/**
+ * @memberof Response
+ * @instance
+ */
+function internalError(data) {
     const json = {
         status: ResponseCodes.InternalServerError
     };
@@ -48,5 +74,6 @@ export const responseInternalError = (response, data) => {
         json.data = data;
     }
 
-    response.status(500).json(json);
-};
+    this.status(500).json(json);
+}
+response.internalError = internalError;

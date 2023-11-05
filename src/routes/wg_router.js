@@ -1,6 +1,5 @@
-import {request, response, Router} from "express";
+import { Router } from "express";
 import WG from "../models/wg_model.js";
-import * as util from "../utils/response_utils.js";
 import { useJWT, createJWT } from "../utils/jwt_utils.js";
 import User from "../models/user_model.js";
 import { ResponseCodes } from "../utils/response_utils.js";
@@ -9,7 +8,7 @@ const router = Router();
 
 router.post('/test-auth', async (request, response) => {
     const testUser = await User.findOne({ username: "test" });
-    util.responseSuccess(response, createJWT({ userId: testUser._id }));
+    response.success(createJWT({ userId: testUser._id }));
 });
 
 router.get('/',
@@ -19,17 +18,17 @@ router.get('/',
             const userId = request.auth.userId;
             const user = await User.findById(userId);
             const wgId = user.wg;
-            if (wgId === null) {
-                util.responseForbidden(response, ResponseCodes.NotInWG);
+            if (!wgId) {
+                response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
             const wg = await WG.findById(wgId);
 
-            util.responseSuccess(response, wg);
+            response.success(wg);
         } catch (error) {
             console.error(error);
-            util.responseInternalError(response);
+            response.internalError();
         }
     }
 );
@@ -41,8 +40,8 @@ router.post('/',
             const userId = request.auth.userId;
             const user = await User.findById(userId);
             const wgId = user.wg;
-            if (wgId !== null) {
-                util.responseForbidden(response, ResponseCodes.AlreadyJoined);
+            if (wgId) {
+                response.forbidden(ResponseCodes.AlreadyJoined);
                 return;
             }
 
@@ -61,12 +60,12 @@ router.post('/',
             user.wg = wg._id;
             await user.save();
 
-            util.responseSuccess(response, {
+            response.success({
                 invitationCode: invitationCode
             });
         } catch (error) {
             console.error(error);
-            util.responseInternalError(response);
+            response.internalError();
         }
     }
 );
@@ -78,15 +77,15 @@ router.get('/join',
             const userId = request.auth.userId;
             const user = await User.findById(userId);
             const wgId = user.wg;
-            if (wgId !== null) {
-                util.responseForbidden(response, ResponseCodes.AlreadyJoined);
+            if (wgId) {
+                response.forbidden(ResponseCodes.AlreadyJoined);
                 return;
             }
 
             const { code } = request.query;
             const wg = await WG.findOne({ invitationCode: code });
-            if (wg === null) {
-                util.responseNotFound(response, ResponseCodes.WGNotFound);
+            if (!wg) {
+                response.notFound(ResponseCodes.WGNotFound);
                 return;
             }
 
@@ -96,10 +95,10 @@ router.get('/join',
             user.wg = wg._id;
             await user.save();
 
-            util.responseSuccess(response);
+            response.success();
         } catch (error) {
             console.error(error);
-            util.responseInternalError(response);
+            response.internalError();
         }
     }
 );
@@ -111,8 +110,8 @@ router.get('/leave',
             const userId = request.auth.userId;
             const user = await User.findById(userId);
             const wgId = user.wg;
-            if (wgId === null) {
-                util.responseForbidden(response, ResponseCodes.NotInWG);
+            if (!wgId) {
+                response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
@@ -125,10 +124,10 @@ router.get('/leave',
             user.wg = null;
             await user.save();
 
-            util.responseSuccess(response);
+            response.success();
         } catch (error) {
             console.error(error);
-            util.responseInternalError(response);
+            response.internalError();
         }
     }
 );
@@ -140,17 +139,17 @@ router.get('/shoppinglist',
             const userId = request.auth.userId;
             const user = await User.findById(userId);
             const wgId = user.wg;
-            if (wgId === null) {
-                util.responseForbidden(response, ResponseCodes.NotInWG);
+            if (!wgId) {
+                response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
             const wg = await WG.findById(wgId);
 
-            util.responseSuccess(response, wg.shoppingList);
+            response.success(wg.shoppingList);
         } catch (error) {
             console.error(error);
-            util.responseInternalError(response);
+            response.internalError();
         }
     }
 );
@@ -162,8 +161,8 @@ router.post('/shoppinglist',
             const userId = request.auth.userId;
             const user = await User.findById(userId);
             const wgId = user.wg;
-            if (wgId === null) {
-                util.responseForbidden(response, ResponseCodes.NotInWG);
+            if (!wgId) {
+                response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
@@ -178,10 +177,10 @@ router.post('/shoppinglist',
 
             await wg.save();
 
-            util.responseSuccess(response, wg.shoppingList);
+            response.success(wg.shoppingList);
         } catch (error) {
             console.error(error);
-            util.responseInternalError(response);
+            response.internalError();
         }
     }
 );
@@ -194,8 +193,8 @@ router.delete('/shoppinglist/:id',
             const userId = request.auth.userId;
             const user = await User.findById(userId);
             const wgId = user.wg;
-            if (wgId === null) {
-                util.responseForbidden(response, ResponseCodes.NotInWG);
+            if (!wgId) {
+                response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
@@ -204,10 +203,10 @@ router.delete('/shoppinglist/:id',
 
             await wg.save();
 
-            util.responseSuccess(response, wg.shoppingList);
+            response.success(wg.shoppingList);
         } catch (error) {
             console.error(error);
-            util.responseInternalError(response);
+            response.internalError();
         }
     }
 );
