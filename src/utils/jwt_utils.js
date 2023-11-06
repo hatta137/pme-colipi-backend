@@ -12,3 +12,4 @@ export const useJWT = () => {
 export const createJWT = (payload) => {
     return jwt.sign(payload, secret, {});
 };
+
