@@ -88,11 +88,32 @@ router.delete("/", useJWT(), async (request, response)=>{
 
         if (!deletedUser) {
             // Wenn der Benutzer nicht gefunden wurde, senden Sie eine 404-Fehlermeldung
-            response.status(404).json({ error: 'Benutzer nicht gefunden' });
+            response.notFound();
         } else {
-            response.status(200).json({ message: 'Benutzer erfolgreich gelöscht' });
+            response.success();
         }
 
+    } catch (error) {
+        console.error(error);
+        response.internalError();
+    }
+})
+
+// updateUser
+
+router.put("/", useJWT(), async (request, response)=>{
+    try {
+
+        const userId = request.auth.userId;
+        const updateData = request.body;
+
+        const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
+
+        if (updatedUser) {
+            response.success();
+        } else {
+            response.notFound();
+        }
     } catch (error) {
         console.error(error);
         response.internalError();
