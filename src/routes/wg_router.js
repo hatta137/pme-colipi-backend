@@ -1,4 +1,4 @@
-import { Router } from "express";
+import {request, response, Router} from "express";
 import WG from "../models/wg_model.js";
 import { useJWT, createJWT } from "../utils/jwt_utils.js";
 import User from "../models/user_model.js";
@@ -80,6 +80,40 @@ router.post('/',
             }
 
             response.success({ invitationCode: invitationCode });
+        } catch (error) {
+            console.error(error);
+            response.internalError();
+        }
+    }
+);
+
+router.delete('/',
+    useJWT(),
+    async (request, response) => {
+        try {
+            const userId = request.auth.userId;
+            const user = await User.findById(userId);
+            const wgId = user.wg;
+            if (!wgId) {
+                response.forbidden(ResponseCodes.NotInWG);
+                return;
+            }
+
+            const wg = await WG.findById(wgId);
+            if (wg.creator.toString() !== userId) {
+                response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
+                return;
+            }
+
+            for (const memberId of wg.members) {
+                const member = await User.findById(memberId);
+                member.wg = null;
+                await member.save();
+            }
+
+            await WG.deleteOne({ _id: wgId });
+
+            response.success();
         } catch (error) {
             console.error(error);
             response.internalError();
