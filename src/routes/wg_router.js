@@ -149,6 +149,50 @@ router.get('/leave',
     }
 );
 
+router.get('/kick/:id',
+    useJWT(),
+    async (request, response) => {
+        try {
+            const idToKick = request.params.id;
+            const userId = request.auth.userId;
+            const user = await User.findById(userId);
+            const wgId = user.wg;
+            if (!wgId) {
+                response.forbidden(ResponseCodes.NotInWG);
+                return;
+            }
+
+            const wg = await WG.findById(wgId);
+            if (wg.creator.toString() !== userId) {
+                response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
+                return;
+            }
+
+            const userToKick = await User.findById(idToKick);
+            if (!userToKick) {
+                response.notFound(ResponseCodes.UserNotFound);
+                return;
+            }
+
+            if (userToKick.wg._id.toString() !== wgId.toString()) {
+                response.notFound(ResponseCodes.UserIsNotInYourWG);
+                return;
+            }
+
+            wg.members = wg.members.filter(memberId => memberId.toString() !== idToKick);
+            await wg.save();
+
+            userToKick.wg = null;
+            await userToKick.save();
+
+            response.success();
+        } catch (error) {
+            console.error(error);
+            response.internalError();
+        }
+    }
+);
+
 router.get('/shoppinglist',
     useJWT(),
     async (request, response) => {

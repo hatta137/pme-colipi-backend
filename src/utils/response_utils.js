@@ -11,6 +11,8 @@ export const ResponseCodes = {
     NotInWG: 'NOT_IN_WG',
     UserNotFound: 'USER_NOT_FOUND',
     UserAlreadyInWG: 'USER_ALREADY_IN_WG',
+    OnlyCreatorCanDoThat: 'ONLY_CREATOR_CAN_DO_THAT',
+    UserIsNotInYourWG: 'USER_IS_NOT_IN_YOUR_WG',
 };
 
 /**
