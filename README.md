@@ -31,6 +31,7 @@ Das Backend ist vorläufig unter dem Port `20013` erreichbar.
 | 🟥 DELETE | `/api/user/`                           | Löscht den User der gerade angemeldet ist  |
 |  PUT      | `/api/user/`                           | Updatet den User der gerade angemeldet ist |
 |  PUT      | `/api/user/increaseBeercounter/:value` | erhöht den Beercounter um value            |
+|  PUT      | `/api/user/decreaseBeercounter/:value` | verringert den Beercounter um value        |
 
 
 
