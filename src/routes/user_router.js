@@ -77,14 +77,14 @@ router.get('/', useJWT(), async (request, response) => {
 })
 
 // deleteUser
-router.delete("/:id", useJWT(), async (request, response)=>{
+router.delete("/", useJWT(), async (request, response)=>{
     try {
 
         //ToDo Benutzer us WG löschen?
 
-        //ToDo den Benutzer löschen der gerade angemeldet ist, geht erst wenn Einiegung über Token da ist --> Cookie
+        const userId = request.auth.userId;
 
-        const deletedUser = await User.findByIdAndDelete(request.params.id);
+        const deletedUser = await User.findByIdAndDelete(userId);
 
         if (!deletedUser) {
             // Wenn der Benutzer nicht gefunden wurde, senden Sie eine 404-Fehlermeldung
