@@ -76,6 +76,24 @@ router.get('/', useJWT(), async (request, response) => {
     }
 })
 
+
+// getUserById
+router.get('/:id', useJWT(), async (request, response) => {
+    try {
+
+        const userId = request.params.id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            response.notFound()
+        }
+        response.status(200).json(user)
+    } catch (error) {
+        console.error(error);
+        response.internalError();
+    }
+})
+
 // deleteUser
 router.delete("/", useJWT(), async (request, response)=>{
     try {

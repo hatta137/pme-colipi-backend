@@ -20,7 +20,7 @@ Das Backend ist vorläufig unter dem Port `20013` erreichbar.
 | 🟩 POST   | `/api/wg/shoppinglist`     | Einkaufsliste Eintrag hinzufügen                                  |
 | 🟥 DELETE | `/api/wg/shoppinglist/:id` | Einkaufsliste Eintrag entfernen                                   |
 
-### '/api/user'
+### `/api/user`
 
 | Methode   | Pfad              | Beschreibung                               |
 |-----------|-------------------|--------------------------------------------|
