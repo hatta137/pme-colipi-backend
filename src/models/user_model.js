@@ -6,7 +6,7 @@ const userSchema = new Schema({
     username: String,
     email: String,
     password: String,
-    beercounter: Number,
+    beercounter: { type: Number, default: 0 },
     wg: { type: mongoose.SchemaTypes.ObjectId, ref: "WG" },
 
 });
