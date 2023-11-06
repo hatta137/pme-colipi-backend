@@ -22,12 +22,13 @@ Das Backend ist vorläufig unter dem Port `20013` erreichbar.
 
 ### '/api/user'
 
-| Methode   | Pfad              | Beschreibung                              |
-|-----------|-------------------|-------------------------------------------|
-| 🟦 GET    | `/api/user/`      | Gibt alle User mit allen Infos zurück     |
-| 🟩 POST   | `/api/user/`      | Legt einen neuen User an                  |
-| 🟩 POST   | `/api/user/login` | Loggt einen User ein                      |
-| 🟥 DELETE | `/api/user/`      | Löscht den User der gerade angemeldet ist |
+| Methode   | Pfad              | Beschreibung                               |
+|-----------|-------------------|--------------------------------------------|
+| 🟦 GET    | `/api/user/`      | Gibt alle User mit allen Infos zurück      |
+| 🟩 POST   | `/api/user/`      | Legt einen neuen User an                   |
+| 🟩 POST   | `/api/user/login` | Loggt einen User ein                       |
+| 🟥 DELETE | `/api/user/`      | Löscht den User der gerade angemeldet ist  |
+|  PUT      | `/api/user/`      | Updatet den User der gerade angemeldet ist |
 
 
 
