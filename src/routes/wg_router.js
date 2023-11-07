@@ -7,17 +7,11 @@ import {generateRandomString} from "../utils/random_utils.js";
 
 const router = Router();
 
-router.post('/test-auth', async (request, response) => {
-    const testUser = await User.findOne({ username: "test" });
-    response.success(createJWT({ userId: testUser._id }));
-});
-
 router.get('/',
     useJWT(),
     async (request, response) => {
         try {
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
             if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
@@ -37,10 +31,8 @@ router.post('/',
     useJWT(),
     async (request, response) => {
         try {
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (wgId) {
+            const user = await User.findById(request.auth.userId);
+            if (user.isInWG()) {
                 response.forbidden(ResponseCodes.AlreadyInWG);
                 return;
             }
@@ -73,8 +65,7 @@ router.delete('/',
     useJWT(),
     async (request, response) => {
         try {
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
             if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
@@ -100,8 +91,7 @@ router.get('/join',
     useJWT(),
     async (request, response) => {
         try {
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
             if (user.isInWG()) {
                 response.forbidden(ResponseCodes.AlreadyInWG);
                 return;
@@ -128,8 +118,7 @@ router.get('/leave',
     useJWT(),
     async (request, response) => {
         try {
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
             if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
@@ -146,13 +135,11 @@ router.get('/leave',
     }
 );
 
-router.get('/kick/:id',
+router.get('/kick/:name',
     useJWT(),
     async (request, response) => {
         try {
-            const idToKick = request.params.id;
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
 
             if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
@@ -165,7 +152,7 @@ router.get('/kick/:id',
                 return;
             }
 
-            const userToKick = await User.findById(idToKick);
+            const userToKick = await User.findOne({ username: request.params.name });
             if (!userToKick) {
                 response.notFound(ResponseCodes.UserNotFound);
                 return;
@@ -190,8 +177,7 @@ router.get('/shoppinglist',
     useJWT(),
     async (request, response) => {
         try {
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
             if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
@@ -211,8 +197,7 @@ router.post('/shoppinglist',
     useJWT(),
     async (request, response) => {
         try {
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
             if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
@@ -235,16 +220,14 @@ router.delete('/shoppinglist/:id',
     useJWT(),
     async (request, response) => {
         try {
-            const id = request.params.id;
-            const userId = request.auth.userId;
-            const user = await User.findById(userId);
+            const user = await User.findById(request.auth.userId);
             if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
             const wg = await user.getWG();
-            await wg.removeShoppingListItemByID(id);
+            await wg.removeShoppingListItemByID(request.params.id);
 
             response.success(wg.shoppingList);
         } catch (error) {
