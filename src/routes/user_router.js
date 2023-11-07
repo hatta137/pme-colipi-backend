@@ -10,6 +10,7 @@ const router = Router();
 router.post('/', async (request, response) => {
     try {
         const data = request.body;
+
         const saltRounds = 10;
 
         const newUser = new User({
@@ -69,7 +70,9 @@ router.post("/login", async (request, response)=>{
 router.get('/', useJWT(), async (request, response) => {
     try {
         const data = await User.find()
+
         response.status(200).json(data)
+
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -84,6 +87,7 @@ router.get('/:id', useJWT(), async (request, response) => {
         const userId = request.params.id;
 
         const user = await User.findById(userId);
+
         if (!user) {
             response.notFound()
         }
@@ -97,7 +101,6 @@ router.get('/:id', useJWT(), async (request, response) => {
 // deleteUser
 router.delete("/", useJWT(), async (request, response)=>{
     try {
-
         //ToDo Benutzer us WG löschen?
 
         const userId = request.auth.userId;
@@ -123,6 +126,7 @@ router.put("/", useJWT(), async (request, response)=>{
     try {
 
         const userId = request.auth.userId;
+
         const updateData = request.body;
 
         const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
@@ -132,6 +136,7 @@ router.put("/", useJWT(), async (request, response)=>{
         } else {
             response.notFound();
         }
+
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -142,9 +147,10 @@ router.put("/", useJWT(), async (request, response)=>{
 // increase Beercounter
 router.put("/increaseBeercounter/:value", useJWT(), async (request, response)=>{
     try {
-        const userId = request.auth.userId;
-        const value = parseInt(request.params.value, 10); // Hier verwenden wir parseInt
 
+        const userId = request.auth.userId;
+
+        const value = parseInt(request.params.value, 10); // Hier verwenden wir parseInt
 
         console.log(value)
         // Benutzer abrufen
@@ -161,6 +167,7 @@ router.put("/increaseBeercounter/:value", useJWT(), async (request, response)=>{
         const updatedUser = await user.save();
 
         response.status(200).json(updatedUser);
+
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -170,9 +177,10 @@ router.put("/increaseBeercounter/:value", useJWT(), async (request, response)=>{
 // decrease Beercounter
 router.put("/decreaseBeercounter/:value", useJWT(), async (request, response)=>{
     try {
-        const userId = request.auth.userId;
-        const value = parseInt(request.params.value, 10); // Hier verwenden wir parseInt
 
+        const userId = request.auth.userId;
+
+        const value = parseInt(request.params.value, 10); // Hier verwenden wir parseInt
 
         console.log(value)
         // Benutzer abrufen
@@ -189,6 +197,7 @@ router.put("/decreaseBeercounter/:value", useJWT(), async (request, response)=>{
         const updatedUser = await user.save();
 
         response.status(200).json(updatedUser);
+
     } catch (error) {
         console.error(error);
         response.internalError();
