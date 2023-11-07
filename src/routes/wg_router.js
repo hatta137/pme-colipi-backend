@@ -1,8 +1,9 @@
-import {request, response, Router} from "express";
+import {Router} from "express";
 import WG from "../models/wg_model.js";
 import { useJWT, createJWT } from "../utils/jwt_utils.js";
 import User from "../models/user_model.js";
 import { ResponseCodes } from "../utils/response_utils.js";
+import {generateRandomString} from "../utils/random_utils.js";
 
 const router = Router();
 
@@ -17,13 +18,12 @@ router.get('/',
         try {
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (!wgId) {
+            if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
-            const wg = await WG.findById(wgId);
+            const wg = await user.getWG();
 
             response.success(wg);
         } catch (error) {
@@ -45,39 +45,21 @@ router.post('/',
                 return;
             }
 
-            const { name, users } = request.body;
-            const invitationCode = generateRandomString(6);
-
-            let members = [ userId ];
-            if (users) {
-                for (const usernameToAdd of users) {
-                    const userToAdd = await User.findOne({ username: usernameToAdd });
-                    if (!userToAdd) {
-                        response.notFound(ResponseCodes.UserNotFound, { username: usernameToAdd });
-                        return;
-                    }
-                    if (userToAdd.wg) {
-                        response.forbidden(ResponseCodes.UserAlreadyInWG, { username: usernameToAdd });
-                        return;
-                    }
-                    members.push(userToAdd._id);
+            const { name, users: additionalUsernames } = request.body;
+            for (const usernameToAdd of additionalUsernames) {
+                const userToAdd = await User.findOne({ username: usernameToAdd });
+                if (!userToAdd) {
+                    response.notFound(ResponseCodes.UserNotFound, { username: usernameToAdd });
+                    return;
+                }
+                if (userToAdd.isInWG()) {
+                    response.forbidden(ResponseCodes.UserAlreadyInWG, { username: usernameToAdd });
+                    return;
                 }
             }
 
-            const wg = await WG.create({
-                name: name,
-                invitationCode: invitationCode,
-                members: members,
-                creator: userId,
-                shoppingList: []
-            });
-            await wg.save();
-
-            for (const memberId of members) {
-                const member = await User.findById(memberId);
-                member.wg = wg._id;
-                await member.save();
-            }
+            const invitationCode = generateRandomString(6);
+            await WG.createWG(user, name, invitationCode, additionalUsernames);
 
             response.success({ invitationCode: invitationCode });
         } catch (error) {
@@ -93,25 +75,18 @@ router.delete('/',
         try {
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (!wgId) {
+            if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
-            const wg = await WG.findById(wgId);
-            if (wg.creator.toString() !== userId) {
+            const wg = await user.getWG();
+            if (!user.isCreatorOfWG(wg)) {
                 response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
                 return;
             }
 
-            for (const memberId of wg.members) {
-                const member = await User.findById(memberId);
-                member.wg = null;
-                await member.save();
-            }
-
-            await WG.deleteOne({ _id: wgId });
+            await wg.delete();
 
             response.success();
         } catch (error) {
@@ -127,8 +102,7 @@ router.get('/join',
         try {
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (wgId) {
+            if (user.isInWG()) {
                 response.forbidden(ResponseCodes.AlreadyInWG);
                 return;
             }
@@ -140,11 +114,7 @@ router.get('/join',
                 return;
             }
 
-            wg.members.push(userId);
-            await wg.save();
-
-            user.wg = wg._id;
-            await user.save();
+            await wg.addUser(user);
 
             response.success();
         } catch (error) {
@@ -160,20 +130,13 @@ router.get('/leave',
         try {
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (!wgId) {
+            if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
-            // TODO: If creator leaves, change creator field to random person?
-
-            const wg = await WG.findById(wgId);
-            wg.members = wg.members.filter(memberId => memberId.toString() !== userId);
-            await wg.save();
-
-            user.wg = null;
-            await user.save();
+            const wg = await user.getWG();
+            await wg.removeUser(user);
 
             response.success();
         } catch (error) {
@@ -190,14 +153,14 @@ router.get('/kick/:id',
             const idToKick = request.params.id;
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (!wgId) {
+
+            if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
-            const wg = await WG.findById(wgId);
-            if (wg.creator.toString() !== userId) {
+            const wg = await user.getWG();
+            if (!user.isCreatorOfWG(wg)) {
                 response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
                 return;
             }
@@ -208,16 +171,12 @@ router.get('/kick/:id',
                 return;
             }
 
-            if (userToKick.wg._id.toString() !== wgId.toString()) {
-                response.notFound(ResponseCodes.UserIsNotInYourWG);
+            if (!wg.containsUser(userToKick)) {
+                response.forbidden(ResponseCodes.UserIsNotInYourWG);
                 return;
             }
 
-            wg.members = wg.members.filter(memberId => memberId.toString() !== idToKick);
-            await wg.save();
-
-            userToKick.wg = null;
-            await userToKick.save();
+            await wg.removeUser(userToKick);
 
             response.success();
         } catch (error) {
@@ -233,13 +192,12 @@ router.get('/shoppinglist',
         try {
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (!wgId) {
+            if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
-            const wg = await WG.findById(wgId);
+            const wg = await user.getWG();
 
             response.success(wg.shoppingList);
         } catch (error) {
@@ -255,22 +213,15 @@ router.post('/shoppinglist',
         try {
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (!wgId) {
+            if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
             const { title, notes } = request.body;
-            const wg = await WG.findById(wgId);
-            const shoppingItem = {
-                title: title,
-                notes: notes,
-                creator: userId
-            };
-            wg.shoppingList.push(shoppingItem);
+            const wg = await user.getWG();
 
-            await wg.save();
+            await wg.addShoppingListItem(user, title, notes);
 
             response.success(wg.shoppingList);
         } catch (error) {
@@ -287,16 +238,13 @@ router.delete('/shoppinglist/:id',
             const id = request.params.id;
             const userId = request.auth.userId;
             const user = await User.findById(userId);
-            const wgId = user.wg;
-            if (!wgId) {
+            if (!user.isInWG()) {
                 response.forbidden(ResponseCodes.NotInWG);
                 return;
             }
 
-            const wg = await WG.findById(wgId);
-            wg.shoppingList = wg.shoppingList.filter(item => item._id.toString() !== id);
-
-            await wg.save();
+            const wg = await user.getWG();
+            await wg.removeShoppingListItemByID(id);
 
             response.success(wg.shoppingList);
         } catch (error) {
@@ -305,17 +253,5 @@ router.delete('/shoppinglist/:id',
         }
     }
 );
-
-const generateRandomString = (length) => {
-    const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let result = '';
-
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        result += characters.charAt(randomIndex);
-    }
-
-    return result;
-};
 
 export default router;

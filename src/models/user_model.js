@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import WG from "./wg_model.js"
+
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -19,4 +21,17 @@ userSchema.methods.comparePassword = async function (password) {
         throw new Error(error)
     }
 };
+
+userSchema.methods.isCreatorOfWG = function (wg) {
+    return wg.creator.toString() === this._id.toString();
+};
+
+userSchema.methods.isInWG = function () {
+    return this.wg !== null;
+};
+
+userSchema.methods.getWG = function () {
+    return WG.findById(this.wg);
+};
+
 export default mongoose.model("User", userSchema);
