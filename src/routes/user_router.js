@@ -49,9 +49,6 @@ router.post("/login", async (request, response)=>{
     try {
         const { username, password } = request.body;
 
-        console.log(password);
-        console.log(username);
-
         const user = await User.findOne({ username });
 
         // Überprüfe ob User existiert
@@ -70,10 +67,7 @@ router.post("/login", async (request, response)=>{
             return response.status(401).json({ error: 'Ungültige Benutzerdaten' });
         }
 
-        //const token = createJWT({ userId: user._id });
-        //return response.cookie("token", token).json({success:true,message:'LoggedIn Successfully', userId: user._id, token: token})
         response.success(createJWT({ userId: user._id }));
-
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -84,9 +78,9 @@ router.post("/login", async (request, response)=>{
 // getAllUsers
 router.get('/', useJWT(), async (request, response) => {
     try {
-        const data = await User.find()
+        const user = await User.find()
 
-        response.status(200).json(data)
+        response.status(200).json(user)
 
     } catch (error) {
         console.error(error);
@@ -100,7 +94,6 @@ router.get('/:id', useJWT(), async (request, response) => {
     try {
 
         const userId = request.params.id;
-
         const user = await User.findById(userId);
 
         if (!user) {
@@ -136,12 +129,10 @@ router.delete("/", useJWT(), async (request, response)=>{
 })
 
 // updateUser
-
 router.put("/", useJWT(), async (request, response)=>{
     try {
 
         const userId = request.auth.userId;
-
         const updateData = request.body;
 
         const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
