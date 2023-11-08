@@ -9,14 +9,27 @@ const router = Router();
 // register
 router.post('/', async (request, response) => {
     try {
-        const data = request.body;
+        const { username, email, password } = request.body;
+
+        // Überprüfe, ob alle erforderlichen Felder vorhanden sind
+        if (!username || !email || !password) {
+            return response.status(400).json({ message: 'Ungültige Anfrage: Benutzername, E-Mail und Passwort sind erforderlich.' });
+        }
+
+        // Überprüfe, ob Benutzername oder E-Mail bereits in der Datenbank existieren
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+
+        if (existingUser) {
+            return response.status(400).json({ message: 'Benutzername oder E-Mail bereits vergeben.' });
+        }
 
         const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         const newUser = new User({
-            username: data["username"],
-            email: data["email"],
-            password: await bcrypt.hash(data["password"], saltRounds)
+            username,
+            email,
+            password: hashedPassword
         });
 
         await newUser.save();
