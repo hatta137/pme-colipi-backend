@@ -38,15 +38,17 @@ router.post('/',
             }
 
             const { name, users: additionalUsernames } = request.body;
-            for (const usernameToAdd of additionalUsernames) {
-                const userToAdd = await User.findOne({ username: usernameToAdd });
-                if (!userToAdd) {
-                    response.notFound(ResponseCodes.UserNotFound, { username: usernameToAdd });
-                    return;
-                }
-                if (userToAdd.isInWG()) {
-                    response.forbidden(ResponseCodes.UserAlreadyInWG, { username: usernameToAdd });
-                    return;
+            if (additionalUsernames) {
+                for (const usernameToAdd of additionalUsernames) {
+                    const userToAdd = await User.findOne({ username: usernameToAdd });
+                    if (!userToAdd) {
+                        response.notFound(ResponseCodes.UserNotFound, { username: usernameToAdd });
+                        return;
+                    }
+                    if (userToAdd.isInWG()) {
+                        response.forbidden(ResponseCodes.UserAlreadyInWG, { username: usernameToAdd });
+                        return;
+                    }
                 }
             }
 

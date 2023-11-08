@@ -29,7 +29,8 @@ router.post('/', async (request, response) => {
         const newUser = new User({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            wg: null
         });
 
         await newUser.save();
