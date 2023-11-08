@@ -21,7 +21,9 @@ router.post('/', async (request, response) => {
 
         await newUser.save();
 
-        response.status(200).json({ message: 'User erfolgreich angelegt', user: newUser });
+        const token = createJWT({ userId: newUser._id });
+
+        response.status(200).json({ message: 'User erfolgreich angelegt und angemeldet', user: newUser, token });
     } catch (error) {
         console.error(error);
         response.internalError();
