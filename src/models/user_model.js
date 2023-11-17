@@ -34,4 +34,16 @@ userSchema.methods.getWG = function () {
     return WG.findById(this.wg);
 };
 
+userSchema.methods.addBeerbonus = async function (beerbonus) {
+    this.beercounter += beerbonus;
+    await this.save();
+    return this.beercounter;
+}
+
+userSchema.methods.reduceBeerbonus = async function (beerbonus) {
+    this.beercounter -= beerbonus;
+    await this.save();
+    return this.beercounter;
+}
+
 export default mongoose.model("User", userSchema);
