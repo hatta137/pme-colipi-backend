@@ -8,6 +8,8 @@ services:
       - "20013:20013"
     environment:
       - MONGODB_URL=mongodb://colipi_mongodb:20012/colipi
+    volumes:
+      - ./src:/app/src
     depends_on:
       - colipi_mongodb
 
