@@ -30,10 +30,17 @@ Das Backend ist vorläufig unter dem Port `20013` erreichbar.
 | 🟩 POST   | `/api/user/login`                      | Loggt einen User ein                       |
 | 🟥 DELETE | `/api/user/`                           | Löscht den User der gerade angemeldet ist  |
 | 🟨 PUT    | `/api/user/`                           | Updatet den User der gerade angemeldet ist |
-| 🟨 PUT    | `/api/user/increaseBeercounter/:value` | erhöht den Beercounter um value            |
-| 🟨 PUT    | `/api/user/decreaseBeercounter/:value` | verringert den Beercounter um value        |
-
+| 🟨 PUT    | `/api/user/increaseBeercounter/:value` | Erhöht den Beercounter um den angegebenen Wert            |
+| 🟨 PUT    | `/api/user/decreaseBeercounter/:value` | Verringert den Beercounter um den angegebenen Wert        |
 
 ### `/api/task`
-### ganz schön Leer hier
 
+| Methode | Pfad                   | Beschreibung                                           |
+|---------|------------------------|--------------------------------------------------------|
+| 🟩 POST | `/api/task/`           | Legt einen neuen Task an                               |
+| 🟦 GET  | `/api/task/`           | Gibt alle Tasks einer WG aus                           |
+| 🟦 GET  | `/api/task/filter/:id` | Gibt einen bestimmten Task basierend auf der ID zurück |
+| 🟦 GET  | `/api/task/filter`     | Gibt gefilterte Tasks zurück                           |
+| 🟨 PUT  | `/api/task/:id`        | Updatet einen bestimmten  Task basierend auf der ID    |
+| 🟥 DELETE | `/api/task/:id`        | Löscht einen Task basierend auf der ID                 |
+| 🟥 DELETE | `/api/task/done/:id`   | Markiert einen Task als erledigt basierend auf der ID  |

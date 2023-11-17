@@ -39,6 +39,4 @@ router.delete("/done/:id",
     useJWT(),
     doneTask);
 
-
-
 export default router;
