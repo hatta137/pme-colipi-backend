@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import WG from "./wg_model.js";
 
 const Schema = mongoose.Schema;
 
