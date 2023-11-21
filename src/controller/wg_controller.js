@@ -30,7 +30,7 @@ async function createWG(request, response) {
             return;
         }
 
-        const { name, maximumMembers, users: additionalUsernames } = request.body;
+        let { name, maximumMembers, users: additionalUsernames } = request.body;
 
         if (maximumMembers < 2 || maximumMembers > MAX_MEMBERS) {
             response.badInput();
@@ -38,6 +38,10 @@ async function createWG(request, response) {
         }
 
         if (additionalUsernames) {
+            if (additionalUsernames.includes(user.username)) {
+                /* To prevent a duplicate of the creator in the members array */
+                additionalUsernames = additionalUsernames.filter(name => name !== user.username);
+            }
             for (const usernameToAdd of additionalUsernames) {
                 const userToAdd = await User.findOne({ username: usernameToAdd });
                 if (!userToAdd) {
