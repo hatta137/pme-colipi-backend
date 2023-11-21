@@ -101,7 +101,7 @@ async function joinWG(request, response) {
             return;
         }
 
-        if (wg.getMemberCount() <= wg.maximumMembers) {
+        if (wg.getMemberCount() >= wg.maximumMembers) {
             response.forbidden(ResponseCodes.WGIsFull);
             return;
         }
