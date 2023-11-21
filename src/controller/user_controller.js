@@ -1,19 +1,6 @@
 import User from "../models/user_model.js";
-import {ResponseCodes} from "../utils/response_utils.js";
-import {generateRandomString} from "../utils/random_utils.js";
 import bcrypt from "bcryptjs";
 import {createJWT} from "../utils/jwt_utils.js";
-import wg_controller from "./wg_controller.js";
-
-// TODO mit in controller?
-/*async function comparePassword(password){
-    try {
-        const isMatch = await bcrypt.compare(password, this.password)
-        return !!isMatch
-    } catch (error) {
-        throw new Error(error)
-    }
-}*/
 
 export async function register(request, response){
     try {
@@ -112,7 +99,6 @@ export async function getUserById(request, response){
 export async function deleteUser(request, response){
     try {
         const userId = request.auth.userId;
-        //TODO check
 
         const user = await User.findById(userId);
         const wg = await user.getWG();
