@@ -34,6 +34,7 @@ async function createWG(request, response) {
 
         if (maximumMembers < 2 || maximumMembers > MAX_MEMBERS) {
             response.badInput();
+            return;
         }
 
         if (additionalUsernames) {
@@ -48,8 +49,9 @@ async function createWG(request, response) {
                     return;
                 }
             }
-            if (additionalUsernames.length + 1 < maximumMembers) {
+            if (additionalUsernames.length + 1 > maximumMembers) {
                 response.badInput();
+                return;
             }
         }
 
