@@ -1,0 +1,15 @@
+meta {
+  name: Kick from WG
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:20013/api/wg/kick/test
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}

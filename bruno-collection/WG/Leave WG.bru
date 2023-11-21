@@ -1,0 +1,15 @@
+meta {
+  name: Leave WG
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:20013/api/wg/leave
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}

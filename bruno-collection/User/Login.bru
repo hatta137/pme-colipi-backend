@@ -1,0 +1,22 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:20013/api/user/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "test",
+    "password": "test"
+  }
+}
+
+tests {
+  bru.setVar("jwt", res.getBody().data);
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Remove Item
+  type: http
+  seq: 3
+}
+
+delete {
+  url: http://localhost:20013/api/wg/shoppinglist/655d1dda1d84df83f8e7ac75
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+    "title": "Tomaten",
+    "notes": "Cherry, 500g"
+  }
+}

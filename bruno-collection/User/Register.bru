@@ -1,0 +1,23 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:20013/api/user/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "test",
+    "email": "test@gmail.com",
+    "password": "test"
+  }
+}
+
+tests {
+  bru.setVar("jwt", res.getBody().token);
+}

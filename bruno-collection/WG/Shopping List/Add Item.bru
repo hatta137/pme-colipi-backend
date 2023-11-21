@@ -1,0 +1,22 @@
+meta {
+  name: Add Item
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:20013/api/wg/shoppinglist
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+    "title": "Tomaten",
+    "notes": "Cherry, 500g"
+  }
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Join WG
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:20013/api/wg/join?code=4OBATI
+  body: none
+  auth: bearer
+}
+
+query {
+  code: 4OBATI
+}
+
+auth:bearer {
+  token: {{jwt}}
+}

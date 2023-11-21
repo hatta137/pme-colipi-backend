@@ -1,0 +1,22 @@
+meta {
+  name: View List
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:20013/api/wg/shoppinglist
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+    "title": "Tomaten",
+    "notes": "Cherry, 500g"
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Delete WG
+  type: http
+  seq: 3
+}
+
+delete {
+  url: http://localhost:20013/api/wg/
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
