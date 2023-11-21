@@ -115,7 +115,8 @@ export async function deleteUser(request, response){
         //TODO check
 
         const user = await User.findById(userId);
-        await user.getWG().removeUser(user);
+        const wg = await user.getWG();
+        await wg.removeUser(user);
 
         const deletedUser = await User.findByIdAndDelete(userId);
 
