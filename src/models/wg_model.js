@@ -25,6 +25,12 @@ const wgSchema = new Schema({
         required: true,
         unique: true
     },
+    maximumMembers: {
+        type: Number,
+        get: v => Math.round(v),
+        set: v => Math.round(v),
+        required: true
+    },
     members: [{
         type: mongoose.SchemaTypes.ObjectId,
         ref: "User",
@@ -40,7 +46,7 @@ const wgSchema = new Schema({
     shoppingList: [shoppingItemSchema]
 });
 
-wgSchema.statics.createWG = async function (user, name, invitationCode, additionalUsernames = []) {
+wgSchema.statics.createWG = async function (user, name, invitationCode, maximumMembers, additionalUsernames = []) {
     let members = [ user._id ];
     for (const usernameToAdd of additionalUsernames) {
         const userToAdd = await User.findOne({ username: usernameToAdd });
@@ -51,6 +57,7 @@ wgSchema.statics.createWG = async function (user, name, invitationCode, addition
         name: name,
         invitationCode: invitationCode,
         members: members,
+        maximumMembers: maximumMembers,
         creator: user._id,
         shoppingList: []
     });
@@ -75,6 +82,10 @@ wgSchema.methods.delete = async function () {
 
 wgSchema.methods.containsUser = function (user) {
     return user.wg._id.toString() === this._id.toString();
+};
+
+wgSchema.methods.getMemberCount = function (user) {
+    return this.members.length;
 };
 
 wgSchema.methods.addUser = async function (user) {

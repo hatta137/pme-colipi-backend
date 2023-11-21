@@ -3,6 +3,8 @@ import {ResponseCodes} from "../utils/response_utils.js";
 import {generateRandomString} from "../utils/random_utils.js";
 import WG from "../models/wg_model.js";
 
+const MAX_MEMBERS = 30;
+
 async function viewWG(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
@@ -28,7 +30,12 @@ async function createWG(request, response) {
             return;
         }
 
-        const { name, users: additionalUsernames } = request.body;
+        const { name, maximumMembers, users: additionalUsernames } = request.body;
+
+        if (maximumMembers < 2 || maximumMembers > MAX_MEMBERS) {
+            response.badInput();
+        }
+
         if (additionalUsernames) {
             for (const usernameToAdd of additionalUsernames) {
                 const userToAdd = await User.findOne({ username: usernameToAdd });
@@ -41,10 +48,13 @@ async function createWG(request, response) {
                     return;
                 }
             }
+            if (additionalUsernames.length + 1 < maximumMembers) {
+                response.badInput();
+            }
         }
 
         const invitationCode = generateRandomString(6);
-        await WG.createWG(user, name, invitationCode, additionalUsernames);
+        await WG.createWG(user, name, invitationCode, maximumMembers, additionalUsernames);
 
         response.success({ invitationCode: invitationCode });
     } catch (error) {
@@ -88,6 +98,11 @@ async function joinWG(request, response) {
         const wg = await WG.findOne({ invitationCode: code });
         if (!wg) {
             response.notFound(ResponseCodes.WGNotFound);
+            return;
+        }
+
+        if (wg.getMemberCount() <= wg.maximumMembers) {
+            response.forbidden(ResponseCodes.WGIsFull);
             return;
         }
 
