@@ -1,20 +1,42 @@
 import mongoose from "mongoose";
-import {generateRandomString} from "../utils/random_utils.js";
 import User from "./user_model.js";
-import {ResponseCodes} from "../utils/response_utils.js";
 const Schema = mongoose.Schema;
 
 const shoppingItemSchema = new Schema({
-    title: String,
+    title: {
+        type: String,
+        required: true
+    },
     notes: String,
-    creator: { type: mongoose.SchemaTypes.ObjectId, ref: "User" }
+    creator: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "User",
+        required: true
+    }
 });
 
 const wgSchema = new Schema({
-    name: String,
-    invitationCode: String,
-    members: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
-    creator: { type: mongoose.SchemaTypes.ObjectId, ref: "User" },
+    name: {
+        type: String,
+        required: true
+    },
+    invitationCode: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    members: [{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "User",
+        required: true,
+        unique: true
+    }],
+    creator: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "User",
+        required: true,
+        unique: true
+    },
     shoppingList: [shoppingItemSchema]
 });
 
