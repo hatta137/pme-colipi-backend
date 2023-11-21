@@ -3,156 +3,30 @@ import { useJWT, createJWT } from "../utils/jwt_utils.js";
 import User from "../models/user_model.js";
 import { ResponseCodes } from "../utils/response_utils.js";
 import bcrypt from 'bcryptjs'
+import {
+    deleteUser,
+    getALlUsers, getUserById,
+    login,
+    register, updateUser
+} from "../controller/user_controller.js"
 
 const router = Router();
 
-// register
-router.post('/', async (request, response) => {
-    try {
-        const { username, email, password } = request.body;
+router.post('/', register);
 
-        // Überprüfe, ob alle erforderlichen Felder vorhanden sind
-        if (!username || !email || !password) {
-            return response.status(400).json({ message: 'Ungültige Anfrage: Benutzername, E-Mail und Passwort sind erforderlich.' });
-        }
+router.post("/login", login);
 
-        // Überprüfe, ob Benutzername oder E-Mail bereits in der Datenbank existieren
-        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+router.get('/', useJWT(), getALlUsers);
 
-        if (existingUser) {
-            return response.status(400).json({ message: 'Benutzername oder E-Mail bereits vergeben.' });
-        }
+router.get('/:id', useJWT(), getUserById);
 
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+router.delete("/", useJWT(), deleteUser);
 
-        const newUser = new User({
-            username,
-            email,
-            password: hashedPassword,
-            wg: null
-        });
-
-        await newUser.save();
-
-        const token = createJWT({ userId: newUser._id });
-
-        response.status(200).json({ message: 'User erfolgreich angelegt und angemeldet', user: newUser, token });
-    } catch (error) {
-        console.error(error);
-        response.internalError();
-    }
-})
+router.put("/", useJWT(), updateUser);
 
 
-// login
-router.post("/login", async (request, response)=>{
-    try {
-        const { username, password } = request.body;
-
-        const user = await User.findOne({ username });
-
-        // Überprüfe ob User existiert
-        if (!user) {
-            console.log("Benutzer nicht gefunden");
-
-            return response.status(401).json({ error: 'Benutzer nicht gefunden' });
-        }
-
-        // Überprüfe das Passwort
-        const isMatch = await user.comparePassword(password);
-
-        if (!isMatch) {
-            console.log("Passwort falsch");
-
-            return response.status(401).json({ error: 'Ungültige Benutzerdaten' });
-        }
-
-        response.success(createJWT({ userId: user._id }));
-    } catch (error) {
-        console.error(error);
-        response.internalError();
-    }
-})
-
-
-// getAllUsers
-router.get('/', useJWT(), async (request, response) => {
-    try {
-        const user = await User.find()
-
-        response.status(200).json(user)
-
-    } catch (error) {
-        console.error(error);
-        response.internalError();
-    }
-})
-
-
-// getUserById
-router.get('/:id', useJWT(), async (request, response) => {
-    try {
-
-        const userId = request.params.id;
-        const user = await User.findById(userId);
-
-        if (!user) {
-            response.notFound()
-        }
-        response.status(200).json(user)
-    } catch (error) {
-        console.error(error);
-        response.internalError();
-    }
-})
-
-// deleteUser
-router.delete("/", useJWT(), async (request, response)=>{
-    try {
-        //ToDo Benutzer us WG löschen?
-
-        const userId = request.auth.userId;
-
-        const deletedUser = await User.findByIdAndDelete(userId);
-
-        if (!deletedUser) {
-            // Wenn der Benutzer nicht gefunden wurde, senden Sie eine 404-Fehlermeldung
-            response.notFound();
-        } else {
-            response.success();
-        }
-
-    } catch (error) {
-        console.error(error);
-        response.internalError();
-    }
-})
-
-// updateUser
-router.put("/", useJWT(), async (request, response)=>{
-    try {
-
-        const userId = request.auth.userId;
-        const updateData = request.body;
-
-        const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
-
-        if (updatedUser) {
-            response.success();
-        } else {
-            response.notFound();
-        }
-
-    } catch (error) {
-        console.error(error);
-        response.internalError();
-    }
-})
-
-
-// increase Beercounter
-router.put("/increaseBeercounter/:value", useJWT(), async (request, response)=>{
+// increase Beercounter OLD
+/*router.put("/increaseBeercounter/:value", useJWT(), async (request, response)=>{
     try {
 
         const userId = request.auth.userId;
@@ -209,5 +83,5 @@ router.put("/decreaseBeercounter/:value", useJWT(), async (request, response)=>{
         console.error(error);
         response.internalError();
     }
-})
+})*/
 export default router;
