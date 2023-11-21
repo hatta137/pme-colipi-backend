@@ -5,9 +5,20 @@ import WG from "./wg_model.js"
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    username: String,
-    email: String,
-    password: String,
+    username: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
     beercounter: { type: Number, default: 0 },
     wg: { type: mongoose.SchemaTypes.ObjectId, ref: "WG" },
 
