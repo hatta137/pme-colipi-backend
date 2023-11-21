@@ -84,7 +84,7 @@ wgSchema.methods.containsUser = function (user) {
     return user.wg._id.toString() === this._id.toString();
 };
 
-wgSchema.methods.getMemberCount = function (user) {
+wgSchema.methods.getMemberCount = function () {
     return this.members.length;
 };
 
@@ -97,9 +97,18 @@ wgSchema.methods.addUser = async function (user) {
 };
 
 wgSchema.methods.removeUser = async function (user) {
-    // TODO: If creator is removed, change creator field to random person?
+    if (this.members.length === 1) {
+        await this.delete();
+        return;
+    }
 
     this.members = this.members.filter(memberId => memberId.toString() !== user._id.toString());
+
+    const wasCreator = this.creator.toString() === user._id.toString();
+    if (wasCreator) {
+        this.creator = this.members[0]._id;
+    }
+
     await this.save();
 
     user.wg = null;
