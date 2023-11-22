@@ -14,6 +14,7 @@ export const ResponseCodes = {
     OnlyCreatorCanDoThat: 'ONLY_CREATOR_CAN_DO_THAT',
     UserIsNotInYourWG: 'USER_IS_NOT_IN_YOUR_WG',
     WGIsFull: 'WG_IS_FULL',
+    InvalidToken: 'INVALID_TOKEN',
 };
 
 /**
