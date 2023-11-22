@@ -1,0 +1,26 @@
+meta {
+  name: Get Filtered Tasks
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:20013/api/task/filter/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+      "title": "putzen",
+      "description": "spezi"
+  }
+}
+
+tests {
+  // 
+}

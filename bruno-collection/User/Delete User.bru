@@ -1,0 +1,15 @@
+meta {
+  name: Delete User
+  type: http
+  seq: 1
+}
+
+delete {
+  url: http://localhost:20013/api/user/
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}

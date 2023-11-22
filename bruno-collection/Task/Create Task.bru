@@ -1,0 +1,23 @@
+meta {
+  name: Create Task
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:20013/api/task/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+      "title": "Flur putzen",
+      "description": "überall spezi auf em boden",
+      "beerbonus": 3
+  }
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Get Task By ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:20013/api/task/filter/{{taskId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+tests {
+  // 
+}

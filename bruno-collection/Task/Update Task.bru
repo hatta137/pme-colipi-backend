@@ -1,0 +1,27 @@
+meta {
+  name: Update Task
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:20013/api/task/{{taskId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+      "title": "Küche putzen",
+      "description": "Mischka hat hart auf den Herd geschissen",
+      "beerbonus": 69
+  }
+}
+
+tests {
+  // 
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Done Task
+  type: http
+  seq: 7
+}
+
+delete {
+  url: http://localhost:20013/api/task/done/{{taskId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
