@@ -19,5 +19,5 @@ body:json {
 }
 
 tests {
-  bru.setVar("jwt", res.getBody().token);
+  bru.setVar("jwt", res.getBody().data.token);
 }

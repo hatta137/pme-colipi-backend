@@ -1,6 +1,7 @@
 import User from "../models/user_model.js";
 import bcrypt from "bcryptjs";
 import {createJWT} from "../utils/jwt_utils.js";
+import {ResponseCodes} from "../utils/response_utils.js";
 
 export async function register(request, response){
     try {
@@ -8,14 +9,14 @@ export async function register(request, response){
 
         // Überprüfe, ob alle erforderlichen Felder vorhanden sind
         if (!username || !email || !password) {
-            return response.status(400).json({ message: 'Ungültige Anfrage: Benutzername, E-Mail und Passwort sind erforderlich.' });
+            return response.badInput();
         }
 
         // Überprüfe, ob Benutzername oder E-Mail bereits in der Datenbank existieren
         const existingUser = await User.findOne({ $or: [{ username }, { email }] });
 
         if (existingUser) {
-            return response.status(400).json({ message: 'Benutzername oder E-Mail bereits vergeben.' });
+            return response.badInput(ResponseCodes.UsernameOrEmailTaken);
         }
 
         const saltRounds = 10;
@@ -32,7 +33,9 @@ export async function register(request, response){
 
         const token = createJWT({ userId: newUser._id });
 
-        response.status(200).json({ message: 'User erfolgreich angelegt und angemeldet', user: newUser, token });
+        response.success({
+            token: token
+        });
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -48,8 +51,7 @@ export async function login(request, response){
         // Überprüfe ob User existiert
         if (!user) {
             console.log("Benutzer nicht gefunden");
-
-            return response.status(401).json({ error: 'Benutzer nicht gefunden' });
+            return response.forbidden(ResponseCodes.InvalidCredentials);
         }
 
         // Überprüfe das Passwort
@@ -57,23 +59,25 @@ export async function login(request, response){
 
         if (!isMatch) {
             console.log("Passwort falsch");
-
-            return response.status(401).json({ error: 'Ungültige Benutzerdaten' });
+            return response.forbidden(ResponseCodes.InvalidCredentials);
         }
 
-        response.success(createJWT({ userId: user._id }));
+        response.success({
+            token: createJWT({userId: user._id})
+        });
     } catch (error) {
         console.error(error);
         response.internalError();
     }
 }
 
-export async function getALlUsers(request, response){
+export async function getAllUsers(request, response){
     try {
         const user = await User.find()
 
-        response.status(200).json(user)
-
+        response.success({
+            users: user
+        })
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -87,9 +91,12 @@ export async function getUserById(request, response){
         const user = await User.findById(userId);
 
         if (!user) {
-            response.notFound()
+            return response.notFound()
         }
-        response.status(200).json(user)
+
+        response.success({
+            user: user
+        })
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -108,11 +115,10 @@ export async function deleteUser(request, response){
 
         if (!deletedUser) {
             // Wenn der Benutzer nicht gefunden wurde, senden Sie eine 404-Fehlermeldung
-            response.notFound();
-        } else {
-            response.success();
+            return response.notFound();
         }
 
+        response.success();
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -127,12 +133,11 @@ export async function updateUser(request, response){
 
         const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
 
-        if (updatedUser) {
-            response.success();
-        } else {
-            response.notFound();
+        if (!updatedUser) {
+            return response.notFound();
         }
 
+        response.success();
     } catch (error) {
         console.error(error);
         response.internalError();

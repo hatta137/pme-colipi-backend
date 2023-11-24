@@ -15,6 +15,8 @@ export const ResponseCodes = {
     UserIsNotInYourWG: 'USER_IS_NOT_IN_YOUR_WG',
     WGIsFull: 'WG_IS_FULL',
     InvalidToken: 'INVALID_TOKEN',
+    InvalidCredentials: 'INVALID_CREDENTIALS',
+    UsernameOrEmailTaken: 'USERNAME_OR_EMAIL_TAKEN',
 };
 
 /**

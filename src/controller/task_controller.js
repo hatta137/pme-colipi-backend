@@ -6,7 +6,7 @@ import {ResponseCodes} from "../utils/response_utils.js";
 async function getAuthWG(userId, res) {
     const user = await User.findById(userId);
     if(!user){
-        res.notFound(ResponseCodes.NotFound, "User from JWT not found");
+        res.forbidden();
         return null;
     }
     const wgID = user.wg;
@@ -15,7 +15,7 @@ async function getAuthWG(userId, res) {
         return null;
     }else if(!WG.findById(wgID)){
         console.log("wg not found");
-        res.notFound(ResponseCodes.WGNotFound, {wg: wgID});
+        res.notFound(ResponseCodes.WGNotFound);
         return null;
     }
     return wgID;
@@ -29,7 +29,9 @@ export async function newTask(req, res) {
         if(wgID) {
             const newTask = await Task.createTask(wgID, task);
             console.log("task created");
-            res.success(newTask);
+            res.success({
+                task: newTask
+            });
         }
     }catch(error) {
         console.log("error: "+error);
@@ -43,7 +45,9 @@ export async function getAllTasks(req, res) {
         if(wgID) {
             const allTasks = await Task.findAllTasksFromWG(wgID);
             console.log("get all tasks from wg: "+wgID);
-            res.success(allTasks);
+            res.success({
+                tasks: allTasks
+            });
         }
     }catch(error) {
         console.log("error: "+error);
@@ -58,14 +62,15 @@ export async function getTaskById(req, res) {
             if(wgID) {
                 const task = await Task.findTaskByID(taskID);
                 if(!task) {
-                    res.notFound(ResponseCodes.NotFound, "Task not found");
-                    return;
+                    return res.notFound();
                 }
-                if(task.wg.toString() !== wgID.toString()){ // ist der task aus users wg?
-                    res.forbidden(ResponseCodes.Forbidden, "Task not from Users WG. You cannot see foreign Tasks");
-                    return;
+                const isTaskInUsersWG = task.wg.toString() === wgID.toString();
+                if(!isTaskInUsersWG){
+                    return res.forbidden();
                 }
-                res.success(task);
+                res.success({
+                    task: task
+                });
             }
         }catch(error) {
             console.log("error: "+error);
@@ -79,7 +84,9 @@ export async function getFilteredTasks(req, res) {
         if(wgID) {
             const filteredTasks = await Task.findFilterTasksFromWG(wgID, req.body);
             console.log("get filtered tasks from wg: "+wgID);
-            res.success(filteredTasks);
+            res.success({
+                tasks: filteredTasks
+            });
         }
     }catch(error) {
         console.log("error: "+error);
@@ -94,7 +101,9 @@ export async function updateTask(req, res) {
         if(wgID) {
             const filteredTasks = await Task.updateTask(taskID, req.body);
             console.log("update task ");
-            res.success(filteredTasks);
+            res.success({
+                tasks: filteredTasks
+            });
         }
     }catch(error) {
         console.log("error: "+error);
@@ -110,12 +119,12 @@ export async function deleteTask(req, res) {
         if(wgID) {
             const task = await Task.findTaskByID(taskID);
             if(!task) {
-                res.notFound(ResponseCodes.NotFound, "Task not found");
+                res.notFound();
                 return;
             }
-            if(task.wg.toString() !== wgID.toString()){ // ist der task aus users wg?
-                res.forbidden(ResponseCodes.Forbidden, "Task not from Users WG. You cannot delete foreign Tasks");
-                return;
+            const isTaskInUsersWG = task.wg.toString() === wgID.toString();
+            if(!isTaskInUsersWG){
+                return res.forbidden();
             }
             await Task.deleteTask(req.params.id);
             res.success();
@@ -135,23 +144,22 @@ export async function doneTask(req, res) {
         if(wgID) {
             const task = await Task.findTaskByID(taskID);
             if(!task) {
-                res.notFound(ResponseCodes.NotFound, "Task not found");
+                res.notFound();
                 return;
             }
-            if(task.wg.toString() !== wgID.toString()){ // ist der task aus users wg?
-                res.forbidden(ResponseCodes.Forbidden, "Task not from Users WG. You cannot check foreign Tasks as done");
-                return;
+            const isTaskInUsersWG = task.wg.toString() === wgID.toString();
+            if(!isTaskInUsersWG){
+                return res.forbidden();
             }
             //beertrader für Aufgabe übernehmen
             const beercounter = await user.addBeerbonus(task.beerbonus);
             await Task.deleteTask(req.params.id);
-            res.success({beercounter: beercounter});
+            res.success({
+                beercounter: beercounter
+            });
         }
     }catch(error){
         console.log("error: "+error);
         res.internalError(error);
     }
 }
-
-
-

@@ -2,6 +2,7 @@ import User from "../models/user_model.js";
 import {ResponseCodes} from "../utils/response_utils.js";
 import {generateRandomString} from "../utils/random_utils.js";
 import WG from "../models/wg_model.js";
+import Task from "../models/task_model.js";
 
 const MAX_MEMBERS = 30;
 
@@ -9,13 +10,38 @@ async function viewWG(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (!user.isInWG()) {
-            response.forbidden(ResponseCodes.NotInWG);
-            return;
+            return response.forbidden(ResponseCodes.NotInWG);
         }
 
-        const wg = await user.getWG();
+        /* Bigass query to forge the final json with exclusively data that is necessary to the client */
+        const wg = await user.getWG()
+            .populate({
+                path: 'members',
+                select: 'username beercounter'
+            })
+            .populate({
+                path: 'creator',
+                select: 'username'
+            })
+            .populate({
+                path: 'shoppingList.creator',
+                select: 'username'
+            })
+            .select('-_id -__v');
 
-        response.success(wg);
+        const wgId = (await user.getWG())._id;
+
+        const tasks = await Task.find({ wg: wgId })
+            .select('title description beerbonus');
+
+        const result = {
+            ...wg.toJSON(),
+            tasks: tasks
+        };
+
+        response.success({
+            wg: result
+        });
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -26,15 +52,13 @@ async function createWG(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (user.isInWG()) {
-            response.forbidden(ResponseCodes.AlreadyInWG);
-            return;
+            return response.forbidden(ResponseCodes.AlreadyInWG);
         }
 
         let { name, maximumMembers, users: additionalUsernames } = request.body;
 
         if (maximumMembers < 2 || maximumMembers > MAX_MEMBERS) {
-            response.badInput();
-            return;
+            return response.badInput();
         }
 
         if (additionalUsernames) {
@@ -45,24 +69,23 @@ async function createWG(request, response) {
             for (const usernameToAdd of additionalUsernames) {
                 const userToAdd = await User.findOne({ username: usernameToAdd });
                 if (!userToAdd) {
-                    response.notFound(ResponseCodes.UserNotFound, { username: usernameToAdd });
-                    return;
+                    return response.notFound(ResponseCodes.UserNotFound, { username: usernameToAdd });
                 }
                 if (userToAdd.isInWG()) {
-                    response.forbidden(ResponseCodes.UserAlreadyInWG, { username: usernameToAdd });
-                    return;
+                    return response.forbidden(ResponseCodes.UserAlreadyInWG, { username: usernameToAdd });
                 }
             }
             if (additionalUsernames.length + 1 > maximumMembers) {
-                response.badInput();
-                return;
+                return response.badInput();
             }
         }
 
         const invitationCode = generateRandomString(6);
         await WG.createWG(user, name, invitationCode, maximumMembers, additionalUsernames);
 
-        response.success({ invitationCode: invitationCode });
+        response.success({
+            invitationCode: invitationCode
+        });
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -73,14 +96,12 @@ async function deleteWG(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (!user.isInWG()) {
-            response.forbidden(ResponseCodes.NotInWG);
-            return;
+            return response.forbidden(ResponseCodes.NotInWG);
         }
 
         const wg = await user.getWG();
         if (!user.isCreatorOfWG(wg)) {
-            response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
-            return;
+            return response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
         }
 
         await wg.delete();
@@ -96,20 +117,17 @@ async function joinWG(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (user.isInWG()) {
-            response.forbidden(ResponseCodes.AlreadyInWG);
-            return;
+            return response.forbidden(ResponseCodes.AlreadyInWG);
         }
 
         const { code } = request.query;
         const wg = await WG.findOne({ invitationCode: code });
         if (!wg) {
-            response.notFound(ResponseCodes.WGNotFound);
-            return;
+            return response.notFound(ResponseCodes.WGNotFound);
         }
 
         if (wg.getMemberCount() >= wg.maximumMembers) {
-            response.forbidden(ResponseCodes.WGIsFull);
-            return;
+            return response.forbidden(ResponseCodes.WGIsFull);
         }
 
         await wg.addUser(user);
@@ -125,8 +143,7 @@ async function leaveWG(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (!user.isInWG()) {
-            response.forbidden(ResponseCodes.NotInWG);
-            return;
+            return response.forbidden(ResponseCodes.NotInWG);
         }
 
         const wg = await user.getWG();
@@ -144,25 +161,21 @@ async function kickFromWG(request, response) {
         const user = await User.findById(request.auth.userId);
 
         if (!user.isInWG()) {
-            response.forbidden(ResponseCodes.NotInWG);
-            return;
+            return response.forbidden(ResponseCodes.NotInWG);
         }
 
         const wg = await user.getWG();
         if (!user.isCreatorOfWG(wg)) {
-            response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
-            return;
+            return response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
         }
 
         const userToKick = await User.findOne({ username: request.params.name });
         if (!userToKick) {
-            response.notFound(ResponseCodes.UserNotFound);
-            return;
+            return response.notFound(ResponseCodes.UserNotFound);
         }
 
         if (!wg.containsUser(userToKick)) {
-            response.forbidden(ResponseCodes.UserIsNotInYourWG);
-            return;
+            return response.forbidden(ResponseCodes.UserIsNotInYourWG);
         }
 
         await wg.removeUser(userToKick);
@@ -178,13 +191,14 @@ async function viewShoppingList(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (!user.isInWG()) {
-            response.forbidden(ResponseCodes.NotInWG);
-            return;
+            return response.forbidden(ResponseCodes.NotInWG);
         }
 
         const wg = await user.getWG();
 
-        response.success(wg.shoppingList);
+        response.success({
+            shoppingList: wg.shoppingList
+        });
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -195,8 +209,7 @@ async function addShoppingListItem(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (!user.isInWG()) {
-            response.forbidden(ResponseCodes.NotInWG);
-            return;
+            return response.forbidden(ResponseCodes.NotInWG);
         }
 
         const { title, notes } = request.body;
@@ -204,7 +217,9 @@ async function addShoppingListItem(request, response) {
 
         await wg.addShoppingListItem(user, title, notes);
 
-        response.success(wg.shoppingList);
+        response.success({
+            shoppingList: wg.shoppingList
+        });
     } catch (error) {
         console.error(error);
         response.internalError();
@@ -215,14 +230,15 @@ async function removeShoppingListItem(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
         if (!user.isInWG()) {
-            response.forbidden(ResponseCodes.NotInWG);
-            return;
+            return response.forbidden(ResponseCodes.NotInWG);
         }
 
         const wg = await user.getWG();
         await wg.removeShoppingListItemByID(request.params.id);
 
-        response.success(wg.shoppingList);
+        response.success({
+            shoppingList: wg.shoppingList
+        });
     } catch (error) {
         console.error(error);
         response.internalError();

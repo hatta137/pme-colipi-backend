@@ -1,11 +1,8 @@
-import {request, response, Router} from "express";
-import { useJWT, createJWT } from "../utils/jwt_utils.js";
-import User from "../models/user_model.js";
-import { ResponseCodes } from "../utils/response_utils.js";
-import bcrypt from 'bcryptjs'
+import {Router} from "express";
+import { useJWT } from "../utils/jwt_utils.js";
 import {
     deleteUser,
-    getALlUsers, getUserById,
+    getAllUsers, getUserById,
     login,
     register, updateUser
 } from "../controller/user_controller.js"
@@ -16,7 +13,7 @@ router.post('/', register);
 
 router.post("/login", login);
 
-router.get('/', useJWT(), getALlUsers);
+router.get('/', useJWT(), getAllUsers);
 
 router.get('/:id', useJWT(), getUserById);
 

@@ -15,5 +15,5 @@ auth:bearer {
 }
 
 tests {
-  bru.setVar("taskId", res.getBody().data[0]._id);
+  bru.setVar("taskId", res.getBody().data.tasks[0]._id);
 }

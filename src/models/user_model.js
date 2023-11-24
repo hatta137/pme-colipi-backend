@@ -21,7 +21,6 @@ const userSchema = new Schema({
     },
     beercounter: { type: Number, default: 0 },
     wg: { type: mongoose.SchemaTypes.ObjectId, ref: "WG" },
-
 });
 
 userSchema.methods.comparePassword = async function (password) {
