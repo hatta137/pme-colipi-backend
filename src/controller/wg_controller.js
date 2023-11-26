@@ -13,7 +13,7 @@ async function viewWG(request, response) {
             return response.forbidden(ResponseCodes.NotInWG);
         }
 
-        /* Bigass query to forge the final json with exclusively data that is necessary to the client */
+        /* Big query to forge the final json with exclusively data that is necessary to the client */
         const wg = await user.getWG()
             .populate({
                 path: 'members',

@@ -9,8 +9,12 @@ export const useJWT = () => {
     return (request, response, next) => {
         expressjwt({ secret: secret, algorithms: ['HS256'] })(request, response, async (error) => {
             if (error) {
+                if (error.name === 'UnauthorizedError') {
+                    return response.forbidden(ResponseCodes.InvalidToken);
+                }
+
                 console.error(error);
-                response.internalError();
+                return response.internalError();
             }
 
             try {
@@ -22,7 +26,7 @@ export const useJWT = () => {
                 }
             } catch (error2) {
                 console.error(error2);
-                response.internalError();
+                return response.internalError();
             }
         });
     };
