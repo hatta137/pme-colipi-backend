@@ -12,7 +12,8 @@ const shoppingItemSchema = new Schema({
         type: mongoose.SchemaTypes.ObjectId,
         ref: "User",
         required: true
-    }
+    },
+    isChecked: Boolean
 });
 
 const wgSchema = new Schema({
@@ -119,7 +120,8 @@ wgSchema.methods.addShoppingListItem = async function (user, title, notes) {
     const shoppingItem = {
         title: title,
         notes: notes,
-        creator: user._id
+        creator: user._id,
+        isChecked: false
     };
     this.shoppingList.push(shoppingItem);
 
