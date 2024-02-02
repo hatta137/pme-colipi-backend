@@ -226,6 +226,25 @@ async function addShoppingListItem(request, response) {
     }
 }
 
+async function checkShoppingListItem(request, response) {
+    try {
+        const user = await User.findById(request.auth.userId);
+        if (!user.isInWG()) {
+            return response.forbidden(ResponseCodes.NotInWG);
+        }
+
+        const { isChecked } = request.body;
+        const wg = await user.getWG();
+
+        await wg.checkShoppingListItem(request.params.id, isChecked);
+
+        response.success();
+    } catch (error) {
+        console.error(error);
+        response.internalError();
+    }
+}
+
 async function removeShoppingListItem(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
@@ -254,5 +273,6 @@ export default {
     kickFromWG,
     viewShoppingList,
     addShoppingListItem,
+    checkShoppingListItem,
     removeShoppingListItem
 }

@@ -128,6 +128,17 @@ wgSchema.methods.addShoppingListItem = async function (user, title, notes) {
     await this.save();
 };
 
+wgSchema.methods.checkShoppingListItem = async function (id, checked) {
+    for (const item of this.shoppingList) {
+        if (item._id.toString() !== id.toString())
+            continue;
+
+        item.isChecked = checked;
+        break;
+    }
+    await this.save();
+};
+
 wgSchema.methods.removeShoppingListItemByID = async function (id) {
     this.shoppingList = this.shoppingList.filter(item => item._id.toString() !== id.toString());
     await this.save();
