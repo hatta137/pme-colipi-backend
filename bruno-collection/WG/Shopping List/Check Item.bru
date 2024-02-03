@@ -1,0 +1,21 @@
+meta {
+  name: Check Item
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:20013/api/wg/shoppinglist/check/65bcbfe50aa1a0da18560cd7
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+    "isChecked": false
+  }
+}

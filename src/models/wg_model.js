@@ -71,6 +71,11 @@ wgSchema.statics.createWG = async function (user, name, invitationCode, maximumM
     }
 };
 
+wgSchema.methods.renameWG = async function (name) {
+    this.name = name;
+    await this.save();
+};
+
 wgSchema.methods.delete = async function () {
     for (const memberId of this.members) {
         const member = await User.findById(memberId);

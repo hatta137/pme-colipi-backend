@@ -14,6 +14,11 @@ router.post('/',
     Controller.createWG
 );
 
+router.put('/',
+    useJWT(),
+    Controller.renameWG
+);
+
 router.delete('/',
     useJWT(),
     Controller.deleteWG

@@ -1,0 +1,22 @@
+meta {
+  name: Rename WG
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:20013/api/wg/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt}}
+}
+
+body:json {
+  {
+    "name": "Wilde WG",
+    "maximumMembers": 4
+  }
+}

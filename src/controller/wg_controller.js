@@ -92,6 +92,28 @@ async function createWG(request, response) {
     }
 }
 
+async function renameWG(request, response) {
+    try {
+        const user = await User.findById(request.auth.userId);
+        if (!user.isInWG()) {
+            return response.forbidden(ResponseCodes.NotInWG);
+        }
+
+        const wg = await user.getWG();
+        if (!user.isCreatorOfWG(wg)) {
+            return response.forbidden(ResponseCodes.OnlyCreatorCanDoThat);
+        }
+
+        const { name } = request.body;
+        await wg.renameWG(name);
+
+        response.success();
+    } catch (error) {
+        console.error(error);
+        response.internalError();
+    }
+}
+
 async function deleteWG(request, response) {
     try {
         const user = await User.findById(request.auth.userId);
@@ -267,6 +289,7 @@ async function removeShoppingListItem(request, response) {
 export default {
     viewWG,
     createWG,
+    renameWG,
     deleteWG,
     joinWG,
     leaveWG,

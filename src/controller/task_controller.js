@@ -30,7 +30,7 @@ export async function newTask(req, res) {
             const newTask = await Task.createTask(wgID, task);
             console.log("task created");
             res.success({
-                task: newTask
+                id: newTask._id
             });
         }
     }catch(error) {
