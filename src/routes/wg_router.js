@@ -54,7 +54,7 @@ router.put('/shoppinglist/check/:id',
     Controller.checkShoppingListItem
 );
 
-router.post('/shoppinglist/:id',
+router.put('/shoppinglist/:id',
     useJWT(),
     Controller.updateShoppingListItem
 );
