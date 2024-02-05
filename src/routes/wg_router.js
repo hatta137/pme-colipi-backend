@@ -49,9 +49,14 @@ router.post('/shoppinglist',
     Controller.addShoppingListItem
 );
 
-router.post('/shoppinglist/check/:id',
+router.put('/shoppinglist/check/:id',
     useJWT(),
     Controller.checkShoppingListItem
+);
+
+router.post('/shoppinglist/:id',
+    useJWT(),
+    Controller.updateShoppingListItem
 );
 
 router.delete('/shoppinglist/:id',
